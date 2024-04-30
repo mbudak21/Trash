@@ -99,6 +99,7 @@ int show_prompt() {
  * @return         0
  */
 int parse_command(char *buf, struct command_t *command) {
+	//printf("Parsing Command\n");
 	const char *splitters = " \t"; // split at whitespace
 	int index, len;
 	len = strlen(buf);
@@ -390,13 +391,13 @@ int process_command(struct command_t *command) {
 	}
 
 	if (strcmp(command->name, "cd") == 0) {
+		//printf("CD invoked\n");
 		if (command->arg_count > 0) {
-			r = chdir(command->args[0]);
+			r = chdir(command->args[1]);
 			if (r == -1) {
 				printf("-%s: %s: %s\n", sysname, command->name,
 					   strerror(errno));
 			}
-
 			return SUCCESS;
 		}
 	}
