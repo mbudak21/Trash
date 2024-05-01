@@ -55,10 +55,10 @@ char* findPath(char* commandName){
 	printf("\n number of Paths = %d \n",numberOfPaths);
 	for (int i = 0; i < numberOfPaths; ++i)
 	{
-		if (isInPath(PathArr[i],commandName))
-		{
+		//if (isInPath(PathArr[i],commandName))
+		//{
 			printf("\n %s/%s ",PathArr[i],commandName);
-		}
+		//}
 	}
 
 	return NULL;
@@ -461,8 +461,8 @@ int prompt(struct command_t *command) {
 }
 
 int main() {		
-	char PathEnv[10000]; //TODO: Make this dynamic.
-	strcpy(PathEnv,getenv("PATH"));
+	char PathEnv[strlen(getenv("PATH"))];
+	strncpy(PathEnv,getenv("PATH"),strlen(getenv("PATH")));
 	PathArr = splitString(PathEnv, ':', &numberOfPaths);
 	if (PathArr == NULL)
 	{
