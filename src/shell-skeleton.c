@@ -51,18 +51,20 @@ int process_command(struct command_t *command);
 //------------------------------------------------------------------------------------------------------------------------------
 
 
-char* findPath(char* commandName){
-	printf("\n number of Paths = %d \n",numberOfPaths);
-	for (int i = 0; i < numberOfPaths; ++i)
-	{
-		//if (isInPath(PathArr[i],commandName))
-		//{
-			printf("\n %s/%s ",PathArr[i],commandName);
-		//}
-	}
-
-	return NULL;
+char* findPath(char* commandName) {
+    for (int i = 0; i < numberOfPaths; ++i) {
+        if (isInPath(PathArr[i], commandName)) {
+            char* fullPath = malloc(512 * sizeof(char));  
+            if (fullPath == NULL) return NULL;
+            snprintf(fullPath, 512, "%s/%s", PathArr[i], commandName);
+			printf("Full path: %s\n", fullPath);
+            return fullPath;
+        }
+    }
+    return NULL;
 }
+
+	
 /**
  * Takes a string, a seperator and a pointer to an integer. 
  * Seperates the said string according to the seperator and saves the number of strings to the integer.
@@ -89,24 +91,22 @@ char** splitString(char* str, char seperator, int* numStrings) {
 
 /**
  * Takes a directory name and a target string.
- * Returns if such file exists or not.
+ * Returns true if there is an executable with targetName in the directory.
  * @param const char *directory, const char *targetString
  * @return bool
  */
 bool isInPath(const char *directory, const char *targetString){
 	DIR *dir = opendir(directory);
     if (dir == NULL) {
-        perror("Unable to open directory");
+        //perror("Unable to open directory");
         return false;
     }
 
     struct dirent *entry;
     while ((entry = readdir(dir)) != NULL) {
-        if (entry->d_type == DT_REG && access(entry->d_name, X_OK) == 0) {
             if (strcmp(entry->d_name, targetString) == 0) {
                 closedir(dir);
                 return true;
-            }
         }
     }
 
