@@ -384,8 +384,6 @@ int prompt(struct command_t *command) {
 	return SUCCESS;
 }
 
-int process_command(struct command_t *command);
-
 int main() {
 	while (1) {
 		struct command_t *command = malloc(sizeof(struct command_t));
