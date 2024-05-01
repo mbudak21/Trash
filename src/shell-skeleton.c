@@ -6,6 +6,7 @@
 #include <sys/wait.h>
 #include <termios.h> // termios, TCSANOW, ECHO, ICANON
 #include <unistd.h>
+#include <dirent.h> //for path resolution.
 const char *sysname = "thrash";
 
 enum return_codes {
@@ -28,11 +29,17 @@ struct command_t {
 #define MAX_STRINGS 50 
 #define MAX_STRING_LENGTH 200 
 
+int numberOfPaths;
+char** PathArr;
+
+
+
 //------------------------------------------------------------------------------------------------------------------------------
 
 bool stringInArray(const char* strings[], int size, const char* target);
-char* findPath(struct command_t *command);
+char* findPath(char* commandName);
 char** splitString(char* str, char delimiter, int* numStrings);
+bool isInPath(const char *directory, const char *targetString);
 void print_command(struct command_t *command);
 int free_command(struct command_t *command);
 int show_prompt();
@@ -44,9 +51,16 @@ int process_command(struct command_t *command);
 //------------------------------------------------------------------------------------------------------------------------------
 
 
-char* findPath(struct command_t *command){
-	printf(command->name);
-	printf(getenv("PATH"));
+char* findPath(char* commandName){
+	printf("\n number of Paths = %d \n",numberOfPaths);
+	for (int i = 0; i < numberOfPaths; ++i)
+	{
+		if (isInPath(PathArr[i],commandName))
+		{
+			printf("\n %s/%s ",PathArr[i],commandName);
+		}
+	}
+
 	return NULL;
 }
 /**
@@ -72,6 +86,35 @@ char** splitString(char* str, char seperator, int* numStrings) {
     *numStrings = i; 
     return result;
 }
+
+/**
+ * Takes a directory name and a target string.
+ * Returns if such file exists or not.
+ * @param const char *directory, const char *targetString
+ * @return bool
+ */
+bool isInPath(const char *directory, const char *targetString){
+	DIR *dir = opendir(directory);
+    if (dir == NULL) {
+        perror("Unable to open directory");
+        return false;
+    }
+
+    struct dirent *entry;
+    while ((entry = readdir(dir)) != NULL) {
+        if (entry->d_type == DT_REG && access(entry->d_name, X_OK) == 0) {
+            if (strcmp(entry->d_name, targetString) == 0) {
+                closedir(dir);
+                return true;
+            }
+        }
+    }
+
+    closedir(dir);
+    return false;
+}
+
+
 
 /**
  *	Takes an array ,size of the array and a string. //int size == sizeof(array) / sizeof(array[0]) 
@@ -417,7 +460,15 @@ int prompt(struct command_t *command) {
 	return SUCCESS;
 }
 
-int main() {
+int main() {		
+	char PathEnv[10000]; //TODO: Make this dynamic.
+	strcpy(PathEnv,getenv("PATH"));
+	PathArr = splitString(PathEnv, ':', &numberOfPaths);
+	if (PathArr == NULL)
+	{
+		perror("Path is empty");
+	}
+
 	while (1) {
 		struct command_t *command = malloc(sizeof(struct command_t));
 
@@ -464,9 +515,9 @@ int process_command(struct command_t *command) {
 			return SUCCESS;
 		}
 	}
-	findPath(command);
 
 
+	findPath(command->name);
 	pid_t pid = fork();
 	// child
 	if (pid == 0) {
