@@ -517,7 +517,7 @@ int process_command(struct command_t *command) {
 	}
 
 
-	findPath(command->name);
+	
 	pid_t pid = fork();
 	// child
 	if (pid == 0) {
@@ -531,7 +531,7 @@ int process_command(struct command_t *command) {
 
 		// TODO: do your own exec with path resolving using execv()
 		// do so by replacing the execvp call below
-		execvp(command->name, command->args); // exec+args+path
+		execv(findPath(command->name), command->args); // exec+args+path
 		exit(0);
 	} else {
 		// TODO: implement background processes here
