@@ -6,7 +6,7 @@
 #include <sys/wait.h>
 #include <termios.h> // termios, TCSANOW, ECHO, ICANON
 #include <unistd.h>
-const char *sysname = "mishell";
+const char *sysname = "thrash";
 
 enum return_codes {
 	SUCCESS = 0,
