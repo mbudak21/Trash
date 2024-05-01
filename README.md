@@ -1,3 +1,3 @@
-# Thra_sh_ Shell
+# Thra<em>sh</em> shell
 
 A fully functional shell written in C.
