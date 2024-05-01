@@ -24,9 +24,15 @@ struct command_t {
 	struct command_t *next; // for piping
 };
 
+
+#define MAX_STRINGS 50 
+#define MAX_STRING_LENGTH 200 
+
 //------------------------------------------------------------------------------------------------------------------------------
 
 bool stringInArray(const char* strings[], int size, const char* target);
+char* findPath(struct command_t *command);
+char** splitString(char* str, char delimiter, int* numStrings);
 void print_command(struct command_t *command);
 int free_command(struct command_t *command);
 int show_prompt();
@@ -38,14 +44,41 @@ int process_command(struct command_t *command);
 //------------------------------------------------------------------------------------------------------------------------------
 
 
+char* findPath(struct command_t *command){
+	printf(command->name);
+	printf(getenv("PATH"));
+	return NULL;
+}
+/**
+ * Takes a string, a seperator and a pointer to an integer. 
+ * Seperates the said string according to the seperator and saves the number of strings to the integer.
+ * @param char* str, char seperator, int* numStrings
+ * @return char**
+ *
+ *
+ */
 
-/*
-*	Takes an array ,size of the array and a string. //int size == sizeof(array) / sizeof(array[0])
-*	Searches the array for the said string and returns true if found.
-*
-*	@params const char* strings[], const char target
-*	@returns bool 
-*/
+char** splitString(char* str, char seperator, int* numStrings) {
+    char** result = (char**)malloc(MAX_STRINGS * sizeof(char*)); 
+
+    int i = 0;
+    char* token = strtok(str, &seperator); 
+    while (token != NULL) {
+        result[i] = (char*)malloc(MAX_STRING_LENGTH * sizeof(char));
+        strcpy(result[i], token); 
+        token = strtok(NULL, &seperator); 
+        i++;
+    }
+    *numStrings = i; 
+    return result;
+}
+
+/**
+ *	Takes an array ,size of the array and a string. //int size == sizeof(array) / sizeof(array[0]) 
+ * 	Searches the array for the said string and returns true if found.
+ *	@param const char* strings[], const char target
+ *	@return bool 
+ */
 bool stringInArray(const char* strings[], int size, const char* target) {
 
     for (int i = 0; i < size; i++) {
@@ -431,6 +464,8 @@ int process_command(struct command_t *command) {
 			return SUCCESS;
 		}
 	}
+	findPath(command);
+
 
 	pid_t pid = fork();
 	// child
