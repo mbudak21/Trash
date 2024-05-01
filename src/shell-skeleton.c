@@ -24,6 +24,21 @@ struct command_t {
 	struct command_t *next; // for piping
 };
 
+//------------------------------------------------------------------------------------------------------------------------------
+
+bool stringInArray(const char* strings[], int size, const char* target);
+void print_command(struct command_t *command);
+int free_command(struct command_t *command);
+int show_prompt();
+int parse_command(char *buf, struct command_t *command);
+void prompt_backspace();
+int prompt(struct command_t *command);
+int process_command(struct command_t *command);
+
+//------------------------------------------------------------------------------------------------------------------------------
+
+
+
 /*
 *	Takes an array ,size of the array and a string. //int size == sizeof(array) / sizeof(array[0])
 *	Searches the array for the said string and returns true if found.
