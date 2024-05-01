@@ -24,6 +24,23 @@ struct command_t {
 	struct command_t *next; // for piping
 };
 
+/*
+*	Takes an array ,size of the array and a string. //int size == sizeof(array) / sizeof(array[0])
+*	Searches the array for the said string and returns true if found.
+*
+*	@params const char* strings[], const char target
+*	@returns bool 
+*/
+bool stringInArray(const char* strings[], int size, const char* target) {
+
+    for (int i = 0; i < size; i++) {
+        if (strcmp(strings[i], target) == 0) {
+            return true;
+        }
+    }
+    return false;
+}
+
 /**
  * Prints a command struct
  * @param struct command_t *
