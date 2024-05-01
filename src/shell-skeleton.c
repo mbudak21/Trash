@@ -55,10 +55,10 @@ char* findPath(char* commandName){
 	printf("\n number of Paths = %d \n",numberOfPaths);
 	for (int i = 0; i < numberOfPaths; ++i)
 	{
-		//if (isInPath(PathArr[i],commandName))
-		//{
+		if (isInPath(PathArr[i],commandName))
+		{
 			printf("\n %s/%s ",PathArr[i],commandName);
-		//}
+		}
 	}
 
 	return NULL;
@@ -102,11 +102,9 @@ bool isInPath(const char *directory, const char *targetString){
 
     struct dirent *entry;
     while ((entry = readdir(dir)) != NULL) {
-        if (entry->d_type == DT_REG && access(entry->d_name, X_OK) == 0) {
             if (strcmp(entry->d_name, targetString) == 0) {
                 closedir(dir);
                 return true;
-            }
         }
     }
 
