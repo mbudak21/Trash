@@ -1,4 +1,4 @@
-TARGET_EXEC := mishell
+TARGET_EXEC := trash
 
 CC := gcc
 
