@@ -504,6 +504,10 @@ int process_command(struct command_t *command) {
 		return EXIT;
 	}
 
+	if(command->next != NULL){ //If there is a next command.
+        printf("%s\n", command->next->name);
+    }
+
 	if (strcmp(command->name, "cd") == 0) {
 		//printf("CD invoked\n");
 		if (command->arg_count > 0) {
@@ -515,8 +519,6 @@ int process_command(struct command_t *command) {
 			return SUCCESS;
 		}
 	}
-
-
 	
 	pid_t pid = fork();
 	// child
@@ -532,6 +534,7 @@ int process_command(struct command_t *command) {
 		// TODO: do your own exec with path resolving using execv()
 		// do so by replacing the execvp call below
 		execv(findPath(command->name), command->args); // exec+args+path
+		printf("%s: Unknown command: %s\n", sysname, command->name);
 		exit(0);
 	} else {
 		// TODO: implement background processes here
@@ -541,6 +544,6 @@ int process_command(struct command_t *command) {
 
 	// TODO: your implementation here
 
-	printf("-%s: %s: command not found\n", sysname, command->name);
+	
 	return UNKNOWN;
 }
