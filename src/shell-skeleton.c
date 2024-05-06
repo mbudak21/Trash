@@ -494,7 +494,6 @@ int main() {
 }
 
 int process_command(struct command_t *command) {
-	
 
 	if (strcmp(command->name, "") == 0) {
 		return SUCCESS;
@@ -504,9 +503,9 @@ int process_command(struct command_t *command) {
 		return EXIT;
 	}
 
-	if(command->next != NULL){ //If there is a next command.
-        printf("%s\n", command->next->name);
-    }
+	// if(command->next != NULL){ //If there is a next command.
+    //     printf("%s\n", command->next->name);
+    // }
 
 	if (strcmp(command->name, "cd") == 0) {
 		//printf("CD invoked\n");
@@ -516,37 +515,51 @@ int process_command(struct command_t *command) {
 				printf("%s: %s: The directory '%s' does not exist\n", sysname, command->name, command->args[1]);
 			}
 			if (command->next != NULL) {
-				process_command(command->next);
+				command = command->next;
+				process_command(command);
 			}
 			return SUCCESS;
 		}
 	}
-	
-	
-	pid_t pid = fork();
-	// child
-	if (pid == 0) {
-		/// This shows how to do exec with environ (but is not available on MacOs)
-		// extern char** environ; // environment variables
-		// execvpe(command->name, command->args, environ); // exec+args+path+environ
 
-		/// This shows how to do exec with auto-path resolve
-		// add a NULL argument to the end of args, and the name to the beginning
-		// as required by exec
-
-		// TODO: do your own exec with path resolving using execv()
-		// do so by replacing the execvp call below
-		execv(findPath(command->name), command->args); // exec+args+path
-		printf("%s: Unknown command: %s\n", sysname, command->name);
-		exit(0);
-	} else {
-		// TODO: implement background processes here
-		wait(0); // wait for child process to finish
-		return SUCCESS;
+	if (command->next != NULL) {
+		//printf("PIPING!\n");
+		pid_t pid = fork();
+		if (pid == 0) { // Child
+			execv(findPath(command->name), command->args);
+			printf("%s: Unknown command: %s\n", sysname, command->name);
+			exit(0);
+		} else { // Parent
+			wait(0);
+			process_command(command->next);
+		}
 	}
+	else{
+		pid_t pid = fork();
+		// child
+		if (pid == 0) {
+			/// This shows how to do exec with environ (but is not available on MacOs)
+			// extern char** environ; // environment variables
+			// execvpe(command->name, command->args, environ); // exec+args+path+environ
 
-	// TODO: your implementation here
+			/// This shows how to do exec with auto-path resolve
+			// add a NULL argument to the end of args, and the name to the beginning
+			// as required by exec
 
-	
+			// TODO: do your own exec with path resolving using execv()
+			// do so by replacing the execvp call below
+			execv(findPath(command->name), command->args); // exec+args+path
+			printf("%s: Unknown command: %s\n", sysname, command->name);
+			exit(0);
+		} else {
+			// TODO: implement background processes here
+			wait(0); // wait for child process to finish
+			return SUCCESS;
+		}
+
+		printf("Hello\n");
+
+		return UNKNOWN;
+	}
 	return UNKNOWN;
 }
