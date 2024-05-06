@@ -7,7 +7,7 @@
 #include <termios.h> // termios, TCSANOW, ECHO, ICANON
 #include <unistd.h>
 #include <dirent.h> //for path resolution.
-const char *sysname = "thrash";
+const char *sysname = "trash";
 
 enum return_codes {
 	SUCCESS = 0,
@@ -57,7 +57,7 @@ char* findPath(char* commandName) {
             char* fullPath = malloc(512 * sizeof(char));  
             if (fullPath == NULL) return NULL;
             snprintf(fullPath, 512, "%s/%s", PathArr[i], commandName);
-			printf("Full path: %s\n", fullPath);
+			//printf("Full path: %s\n", fullPath);
             return fullPath;
         }
     }
@@ -494,7 +494,7 @@ int main() {
 }
 
 int process_command(struct command_t *command) {
-	int r;
+	
 
 	if (strcmp(command->name, "") == 0) {
 		return SUCCESS;
@@ -511,14 +511,17 @@ int process_command(struct command_t *command) {
 	if (strcmp(command->name, "cd") == 0) {
 		//printf("CD invoked\n");
 		if (command->arg_count > 0) {
-			r = chdir(command->args[1]);
+			int r = chdir(command->args[1]);
 			if (r == -1) {
-				printf("-%s: %s: %s\n", sysname, command->name,
-					   strerror(errno));
+				printf("%s: %s: The directory '%s' does not exist\n", sysname, command->name, command->args[1]);
+			}
+			if (command->next != NULL) {
+				process_command(command->next);
 			}
 			return SUCCESS;
 		}
 	}
+	
 	
 	pid_t pid = fork();
 	// child
