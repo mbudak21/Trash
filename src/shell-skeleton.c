@@ -509,7 +509,9 @@ int process_command(struct command_t *command) {
 
 	if (strcmp(command->name, "cd") == 0) {
 		//printf("CD invoked\n");
-		if (command->arg_count > 0) {
+		// printf("%s\n", command->args[0]);
+		// printf("%s\n", command->args[1]);
+		if (command->arg_count > 2) {
 			int r = chdir(command->args[1]);
 			if (r == -1) {
 				printf("%s: %s: The directory '%s' does not exist\n", sysname, command->name, command->args[1]);
@@ -520,10 +522,19 @@ int process_command(struct command_t *command) {
 			}
 			return SUCCESS;
 		}
+		else{
+			chdir(getenv("HOME"));
+			if (command->next != NULL) {
+				command = command->next;
+				process_command(command);
+			}
+			return SUCCESS;
+		}
 	}
 
 	if (command->next != NULL) {
 		//printf("PIPING!\n");
+		// TODO: Add some piping logic
 		pid_t pid = fork();
 		if (pid == 0) { // Child
 			execv(findPath(command->name), command->args);
