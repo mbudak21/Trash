@@ -504,6 +504,10 @@ int process_command(struct command_t *command) {
 		return EXIT;
 	}
 
+	if(command->next != NULL){ //If there is a next command.
+		printf("%s\n", command->next->name);
+	}
+
 	if (strcmp(command->name, "cd") == 0) {
 		//printf("CD invoked\n");
 		if (command->arg_count > 0) {
