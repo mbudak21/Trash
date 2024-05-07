@@ -32,6 +32,8 @@ struct command_t {
 
 int numberOfPaths;
 char** PathArr;
+int pipefd[2]; //For Part2. 
+
 
 
 
@@ -536,8 +538,17 @@ int process_command(struct command_t *command) {
 	if (command->next != NULL) {
 		//printf("PIPING!\n");
 		// TODO: Add some piping logic
+		if (pipe(pipefd) == -1) {
+            perror("Pipe failed");
+            return UNKNOWN;
+        }
+
 		pid_t pid = fork();
 		if (pid == 0) { // Child
+			dup2(pipefd[1], STDOUT_FILENO);
+            close(pipefd[0]); // Close the unused read end of the pipe
+            close(pipefd[1]); // Close the write end of the pipe	
+            		
 			execv(findPath(command->name), command->args);
 			printf("%s: Unknown command: %s\n", sysname, command->name);
 			exit(0);
@@ -550,6 +561,10 @@ int process_command(struct command_t *command) {
 		pid_t pid = fork();
 		// child
 		if (pid == 0) {
+			dup2(pipefd[0], STDIN_FILENO);
+            close(pipefd[1]); // Close the unused write end of the pipe
+            close(pipefd[0]); // Close the read end of the pipe
+
 			/// This shows how to do exec with environ (but is not available on MacOs)
 			// extern char** environ; // environment variables
 			// execvpe(command->name, command->args, environ); // exec+args+path+environ
