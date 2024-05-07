@@ -32,7 +32,8 @@ struct command_t {
 
 int numberOfPaths;
 char** PathArr;
-int pipefd[2]; //For Part2. 
+int pipefd[50][2]; 
+int numberOfPipes = 0; 
 
 
 
@@ -538,22 +539,32 @@ int process_command(struct command_t *command) {
 	if (command->next != NULL) {
 		//printf("PIPING!\n");
 		// TODO: Add some piping logic
-		if (pipe(pipefd) == -1) {
-            perror("Pipe failed");
-            return UNKNOWN;
-        }
+		if (pipe(pipefd[numberOfPipes]) == -1) {
+    		perror("Pipe failed");
+    		return UNKNOWN;
+  		}
+  		numberOfPipes++;
 
 		pid_t pid = fork();
 		if (pid == 0) { // Child
-			dup2(pipefd[1], STDOUT_FILENO);
-            close(pipefd[0]); // Close the unused read end of the pipe
-            close(pipefd[1]); // Close the write end of the pipe	
-            		
+            if (numberOfPipes > 1) {
+                // Redirect input from the previous pipe
+                dup2(pipefd[numberOfPipes - 2][0], STDIN_FILENO);
+                close(pipefd[numberOfPipes - 2][0]);
+            }
+            // Redirect output to the current pipe
+            dup2(pipefd[numberOfPipes - 1][1], STDOUT_FILENO);
+            close(pipefd[numberOfPipes - 1][1]);
+            close(pipefd[numberOfPipes - 1][0]);
+			
+
+        
 			execv(findPath(command->name), command->args);
 			printf("%s: Unknown command: %s\n", sysname, command->name);
 			exit(0);
 		} else { // Parent
 			wait(0);
+			close(pipefd[numberOfPipes - 1][1]);
 			process_command(command->next);
 		}
 	}
@@ -561,10 +572,11 @@ int process_command(struct command_t *command) {
 		pid_t pid = fork();
 		// child
 		if (pid == 0) {
-			dup2(pipefd[0], STDIN_FILENO);
-            close(pipefd[1]); // Close the unused write end of the pipe
-            close(pipefd[0]); // Close the read end of the pipe
+			if(numberOfPipes != 0){
+				dup2(pipefd[numberOfPipes - 1][0], STDIN_FILENO);
+				close(pipefd[numberOfPipes - 1][0]);
 
+			}
 			/// This shows how to do exec with environ (but is not available on MacOs)
 			// extern char** environ; // environment variables
 			// execvpe(command->name, command->args, environ); // exec+args+path+environ
