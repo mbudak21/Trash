@@ -1,4 +1,4 @@
-name: C/C++ CI
+name: Build C files
 
 on:
   push:
@@ -13,7 +13,5 @@ jobs:
 
     steps:
     - uses: actions/checkout@v4
-
-    - name: make
+    - name: make all
       run: make all
-
