@@ -32,7 +32,7 @@ struct command_t {
 
 int numberOfPaths;
 char** PathArr;
-int pipefd[50][2]; 
+int pipefd[256][2]; 
 int numberOfPipes = 0; 
 
 
