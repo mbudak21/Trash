@@ -28,7 +28,9 @@ struct command_t {
 
 
 #define MAX_STRINGS 50 
-#define MAX_STRING_LENGTH 200 
+#define MAX_STRING_LENGTH 200
+#define MAX_FILENAME_LENGTH 256
+#define MAX_FILES 500
 
 int numberOfPaths;
 char** PathArr;
@@ -51,9 +53,48 @@ int parse_command(char *buf, struct command_t *command);
 void prompt_backspace();
 int prompt(struct command_t *command);
 int process_command(struct command_t *command);
+char** autocompleteFilesMultipleDirectories(char** directories, int numDirectories, const char* targetString, int* count);
 
 //------------------------------------------------------------------------------------------------------------------------------
 
+char** autocompleteFilesMultipleDirectories(char** directories, int numDirectories, const char* targetString, int* count) {
+    char** matchingFiles = (char**)malloc(MAX_FILES * sizeof(char*));
+    int index = 0;
+    char encountered[MAX_FILES][MAX_FILENAME_LENGTH]; 
+    memset(encountered, 0, sizeof(encountered)); //To clear encountered.
+
+    for (int i = 0; i < numDirectories; i++) {
+        DIR *dir;
+        struct dirent *ent;
+        const char* directory = directories[i];
+        if ((dir = opendir(directory)) != NULL) {
+            while ((ent = readdir(dir)) != NULL) {
+                if (strncmp(ent->d_name, targetString, strlen(targetString)) == 0) {
+                    bool found = false;
+                    for (int j = 0; j < index; j++) {
+                        if (strcmp(matchingFiles[j], ent->d_name) == 0) {
+                            found = true;
+                            break;
+                        }
+                    }
+                    if (!found) {
+                        matchingFiles[index] = (char*)malloc(MAX_FILENAME_LENGTH * sizeof(char));
+                        strcpy(matchingFiles[index], ent->d_name);
+                        strcpy(encountered[index], ent->d_name);
+                        index++;
+                    }
+                }
+            }
+            closedir(dir);
+        } else {
+            perror("Failed to open directory");
+            return NULL;
+        }
+    }
+
+    *count = index;
+    return matchingFiles;
+}
 
 char* findPath(char* commandName) {
     for (int i = 0; i < numberOfPaths; ++i) {
@@ -499,6 +540,23 @@ int main() {
 
 int process_command(struct command_t *command) {
 
+	if (command->auto_complete) {
+        int autoCompleteCount;
+        char** results = autocompleteFilesMultipleDirectories(PathArr, numberOfPaths, command->name, &autoCompleteCount);
+        if (results != NULL) {
+        	printf("\n");
+            for (int i = 0; i < autoCompleteCount; ++i) {
+                printf("%s, ", results[i]);
+                free(results[i]);
+            }
+            free(results);
+            printf("\n");
+        }
+        else{
+        	printf("\n");
+        }
+        return SUCCESS;
+    }
 	if (strcmp(command->name, "") == 0) {
 		return SUCCESS;
 	}
@@ -592,7 +650,13 @@ int process_command(struct command_t *command) {
 			exit(0);
 		} else {
 			// TODO: implement background processes here
-			wait(0); // wait for child process to finish
+			if(command->background){
+				printf("Background process started :%s\n", command->name);
+			}
+			else {
+				wait(0); // wait for child process to finish
+
+			}
 			return SUCCESS;
 		}
 
