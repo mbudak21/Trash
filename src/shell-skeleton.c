@@ -27,7 +27,7 @@ struct command_t {
 };
 
 
-#define MAX_STRINGS 50 
+#define MAX_STRINGS 75
 #define MAX_STRING_LENGTH 200
 #define MAX_FILENAME_LENGTH 256
 #define MAX_FILES 500
